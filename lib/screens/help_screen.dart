@@ -38,9 +38,15 @@ class _HelpScreenState extends State<HelpScreen> {
   bool live = false;
   bool responding = false;
   bool cancelOpen = false;
-  String? respondedAt;
+  Timer? responseTimer;
 
   String get view => stack.last;
+
+  @override
+  void dispose() {
+    responseTimer?.cancel();
+    super.dispose();
+  }
 
   void push(String name) => setState(() => stack.add(name));
 
@@ -49,6 +55,7 @@ class _HelpScreenState extends State<HelpScreen> {
       setState(() => cancelOpen = false);
       return;
     }
+    if (view == 'active') responseTimer?.cancel();
     if (stack.length <= 1) {
       context.read<Nav>().go('home');
       return;
@@ -62,10 +69,17 @@ class _HelpScreenState extends State<HelpScreen> {
       final id = store.familyIdForSos(person.id, person.name);
       if (id != null) store.addFamilyMessage(id, 'sos', sosFamilyAlert());
     }
+    responseTimer?.cancel();
+    responseTimer = Timer(const Duration(seconds: 6), () {
+      if (!mounted || !live) return;
+      final id = context.read<AppStore>().familyIdForSos(_priya.id, _priya.name);
+      if (id != null) context.read<AppStore>().addFamilyMessage(id, 'sos', familyRespondedNote());
+      setState(() => responding = true);
+    });
     setState(() {
       live = true;
       responding = false;
-      respondedAt = null;
+      cancelOpen = false;
       stack
         ..clear()
         ..addAll(['main', 'active']);
@@ -75,57 +89,51 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
+    final header = Row(
+      children: [
+        IconButton(
+          onPressed: back,
+          icon: const Icon(Icons.chevron_left),
+          style: IconButton.styleFrom(backgroundColor: Colors.white, minimumSize: const Size(48, 48), foregroundColor: AppColors.navy),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(store.t(Copy.sosTitle), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy)),
+          ),
+        ),
+        if (live && view == 'active')
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: AppColors.sos, borderRadius: BorderRadius.circular(99)),
+            child: Text(store.t(Copy.live), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+          ),
+      ],
+    );
     return Stack(
       children: [
-        ListView(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: back,
-                  icon: const Icon(Icons.chevron_left),
-                  style: IconButton.styleFrom(backgroundColor: Colors.white, minimumSize: const Size(48, 48), foregroundColor: AppColors.navy),
-                ),
-                const SizedBox(width: 8),
-                Expanded(child: Text(store.t(Copy.sosTitle), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy))),
-                if (live && view == 'active')
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: AppColors.sos, borderRadius: BorderRadius.circular(99)),
-                    child: Text(store.t(Copy.live), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  ),
-              ],
-            ),
+            header,
             const SizedBox(height: 16),
-            if (view == 'main') _Main(onSos: () => push('confirm'), onFamily: () => push('contacts'), onAssist: () => push('assist')),
-            if (view == 'confirm') _Confirm(onStart: startSos, onCancel: back),
-            if (view == 'active')
-              _Active(
-                responding: responding,
-                respondedAt: respondedAt,
-                onToggle: () {
-                  final store = context.read<AppStore>();
-                  if (!responding) {
-                    final id = store.familyIdForSos(_priya.id, _priya.name);
-                    if (id != null) store.addFamilyMessage(id, 'sos', familyRespondedNote());
-                    setState(() {
-                      responding = true;
-                      respondedAt = DateTime.now().toIso8601String();
-                    });
-                  } else {
-                    setState(() {
-                      responding = false;
-                      respondedAt = null;
-                    });
-                  }
-                },
-                onCall112: () => setState(() {
-                  calling = _line;
-                  stack.add('call');
-                }),
-                onFamily: () => push('contacts'),
-                onCancel: () => setState(() => cancelOpen = true),
-              ),
+            Expanded(
+              child: view == 'main'
+                  ? _Main(onSos: startSos, onFamily: () => push('contacts'), onAssist: () => push('assist'))
+                  : view == 'active'
+                      ? _Active(
+                          responding: responding,
+                          onCall: () => setState(() {
+                            calling = _line;
+                            stack.add('call');
+                          }),
+                          onCancel: () => setState(() => cancelOpen = true),
+                        )
+                      : ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
             if (view == 'contacts')
               _Contacts(onCall: (person) {
                 final id = context.read<AppStore>().familyIdForSos(person.id, person.name);
@@ -139,7 +147,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 });
               }),
             if (view == 'call' && calling != null) _Call(person: calling!, onEnd: back),
-            if (view == 'assist') _Assist(onPick: (index) => setState(() { assistId = '$index'; stack.add('assistPick'); }), onSos: () => push('confirm')),
+            if (view == 'assist') _Assist(onPick: (index) => setState(() { assistId = '$index'; stack.add('assistPick'); }), onSos: startSos),
             if (view == 'assistPick')
               _AssistDetail(
                 index: int.parse(assistId ?? '0'),
@@ -150,13 +158,13 @@ class _HelpScreenState extends State<HelpScreen> {
                   push('assistDone');
                 },
                 onCall: () => setState(() { calling = _priya; stack.add('call'); }),
-                onSos: () => push('confirm'),
+                onSos: startSos,
               ),
             if (view == 'assistDone')
               _AssistDone(
                 index: int.parse(assistId ?? '0'),
                 onCall: () => setState(() { calling = _priya; stack.add('call'); }),
-                onSos: () => push('confirm'),
+                onSos: startSos,
               ),
             if (view == 'cancelled')
               _Cancelled(onDone: () => setState(() {
@@ -165,12 +173,15 @@ class _HelpScreenState extends State<HelpScreen> {
                   ..clear()
                   ..add('main');
               })),
+                      ],
+                    ),
+            ),
           ],
         ),
         if (cancelOpen) _CancelModal(onYes: () => setState(() {
+          responseTimer?.cancel();
           live = false;
           responding = false;
-          respondedAt = null;
           cancelOpen = false;
           stack
             ..clear()
@@ -193,21 +204,13 @@ class _Main extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(store.t(Copy.areYouOk), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.navy, height: 1.1)),
-        const SizedBox(height: 8),
-        Text(store.t(Copy.chooseNeed), style: const TextStyle(fontSize: 18, height: 1.3)),
+        Text(store.t(Copy.areYouOk), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: AppColors.navy, height: 1.1)),
+        const SizedBox(height: 20),
+        Expanded(child: _SosCard(Icons.phone, store.t(Copy.emergencySos), AppColors.sos, Colors.white, onSos)),
         const SizedBox(height: 16),
-        _SosCard(Icons.phone, store.t(Copy.emergencySos), store.t(Copy.needImmediate), store.t(Copy.alertFamily), AppColors.sos, Colors.white, onSos),
-        const SizedBox(height: 12),
-        _SosCard(Icons.phone, store.t(Copy.callMyFamily), store.t(Copy.speakTrust), '', const Color(0xFFE7F7EE), AppColors.navy, onFamily),
-        const SizedBox(height: 12),
-        _SosCard(Icons.volunteer_activism, store.t(Copy.needAssist), store.t(Copy.notEmergency), '', const Color(0xFFE7F3FB), AppColors.navy, onAssist),
+        Expanded(child: _SosCard(Icons.phone, store.t(Copy.callMyFamily), const Color(0xFFE7F7EE), AppColors.navy, onFamily)),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0x1A202E63))),
-          child: Text(store.t(Copy.locationShare), style: const TextStyle(fontSize: 16, height: 1.3)),
-        ),
+        Expanded(child: _SosCard(Icons.volunteer_activism, store.t(Copy.needAssist), const Color(0xFFE7F3FB), AppColors.navy, onAssist)),
       ],
     );
   }
@@ -216,150 +219,115 @@ class _Main extends StatelessWidget {
 class _SosCard extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String body;
-  final String extra;
   final Color color;
   final Color foreground;
   final VoidCallback onTap;
-  const _SosCard(this.icon, this.title, this.body, this.extra, this.color, this.foreground, this.onTap);
+  const _SosCard(this.icon, this.title, this.color, this.foreground, this.onTap);
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: color,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(28),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(icon, size: 42, color: foreground),
-            const SizedBox(height: 12),
-            Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: foreground, height: 1.1)),
-            const SizedBox(height: 4),
-            Text(body, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: foreground, height: 1.3)),
-            if (extra.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(extra, style: TextStyle(fontSize: 16, color: foreground.withValues(alpha: 0.9), height: 1.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+          child: Row(
+            children: [
+              Icon(icon, size: 56, color: foreground),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Text(title, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: foreground, height: 1.15)),
+              ),
             ],
-          ]),
+          ),
         ),
       ),
     );
-  }
-}
-
-class _Confirm extends StatelessWidget {
-  final VoidCallback onStart;
-  final VoidCallback onCancel;
-  const _Confirm({required this.onStart, required this.onCancel});
-
-  @override
-  Widget build(BuildContext context) {
-    final store = context.watch<AppStore>();
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const Icon(Icons.campaign, size: 64, color: AppColors.sos),
-      Text(store.t(Copy.startAsk), textAlign: TextAlign.center, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
-      Text(store.t(Copy.startBody), textAlign: TextAlign.center, style: const TextStyle(fontSize: 18)),
-      const SizedBox(height: 12),
-      for (final row in [Copy.rowContacts, Copy.rowLocation, Copy.rowAccess])
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0x1A202E63))),
-          child: Row(children: [const Icon(Icons.check, color: AppColors.navy), const SizedBox(width: 8), Expanded(child: Text(store.t(row), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.navy)))]),
-        ),
-      PrimaryButton(label: store.t(Copy.yesStart), background: AppColors.sos, onPressed: onStart),
-      const SizedBox(height: 8),
-      OutlineButton(label: store.t(Copy.cancel), onPressed: onCancel),
-    ]);
   }
 }
 
 class _Active extends StatelessWidget {
   final bool responding;
-  final String? respondedAt;
-  final VoidCallback onToggle;
-  final VoidCallback onCall112;
-  final VoidCallback onFamily;
+  final VoidCallback onCall;
   final VoidCallback onCancel;
-  const _Active({required this.responding, required this.respondedAt, required this.onToggle, required this.onCall112, required this.onFamily, required this.onCancel});
+  const _Active({required this.responding, required this.onCall, required this.onCancel});
 
   @override
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(store.t(Copy.activated), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
-      Text(store.t(Copy.activatedBody), style: const TextStyle(fontSize: 18)),
-      const SizedBox(height: 12),
-      _Check(store.t(Copy.alertSent)),
-      _Check(store.t(Copy.locationStarted)),
-      _Check(responding ? store.t(Copy.daughterResponding) : store.t(Copy.waitingFamily)),
-      if (responding) ...[
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFFE5F6EA), borderRadius: BorderRadius.circular(16)),
-          child: Text(store.t(Copy.priyaOnWay), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          store.t(responding ? Copy.daughterResponding : Copy.activated),
+          style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: AppColors.navy, height: 1.1),
         ),
+        Expanded(
+          child: responding
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipOval(child: Image.asset(_priya.image!, width: 140, height: 140, fit: BoxFit.cover)),
+                    const SizedBox(height: 12),
+                    Text(_priya.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                    const SizedBox(height: 16),
+                    _StatusLine(Icons.location_on, store.t(Copy.liveShared)),
+                    const SizedBox(height: 10),
+                    _StatusLine(Icons.check_circle, store.t(Copy.alertFamilySent)),
+                  ],
+                )
+              : const Center(child: Icon(Icons.campaign, size: 120, color: AppColors.sos)),
+        ),
+        _SosAction(store.t(Copy.callEmergency), AppColors.sos, Colors.white, onCall),
+        const SizedBox(height: 12),
+        _SosAction(store.t(Copy.cancelSos), Colors.white, AppColors.navy, onCancel),
       ],
-      const SizedBox(height: 12),
-      Row(children: [
-        _PersonChip(_priya, responding ? store.t(Copy.onTheWay) : store.t(Copy.waiting)),
-        const SizedBox(width: 8),
-        _PersonChip(_rahul, store.t(Copy.waiting)),
-      ]),
-      const SizedBox(height: 12),
-      Container(
-        height: 120,
-        decoration: BoxDecoration(color: const Color(0xFFD7EBD4), borderRadius: BorderRadius.circular(20)),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.location_on, color: AppColors.navy, size: 32),
-          Text(store.t(Copy.yourLocation), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.navy)),
-          Text(store.t(Copy.liveShared)),
-          if (respondedAt != null) Text(formatWhen(respondedAt!, store.hindi), style: const TextStyle(color: AppColors.muted)),
-        ]),
-      ),
-      const SizedBox(height: 12),
-      PrimaryButton(label: store.t(Copy.call112), background: AppColors.sos, onPressed: onCall112),
-      const SizedBox(height: 8),
-      OutlineButton(label: store.t(Copy.callMyFamily), onPressed: onFamily),
-      const SizedBox(height: 8),
-      OutlineButton(label: store.t(responding ? Copy.showWaiting : Copy.showResponding), onPressed: onToggle),
-      const SizedBox(height: 8),
-      OutlineButton(label: store.t(Copy.cancelSos), onPressed: onCancel),
-    ]);
-  }
-}
-
-class _Check extends StatelessWidget {
-  final String label;
-  const _Check(this.label);
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(children: [const Icon(Icons.check_circle, color: AppColors.success), const SizedBox(width: 8), Expanded(child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)))]),
     );
   }
 }
 
-class _PersonChip extends StatelessWidget {
-  final _Person person;
-  final String status;
-  const _PersonChip(this.person, this.status);
+class _StatusLine extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _StatusLine(this.icon, this.label);
+
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-        child: Column(children: [
-          if (person.image != null) ClipOval(child: Image.asset(person.image!, width: 56, height: 56, fit: BoxFit.cover)),
-          Text(person.name, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.navy)),
-          Text(status, style: const TextStyle(color: AppColors.muted)),
-        ]),
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.success, size: 32),
+        const SizedBox(width: 10),
+        Expanded(child: Text(label, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.navy, height: 1.2))),
+      ],
+    );
+  }
+}
+
+class _SosAction extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color foreground;
+  final VoidCallback onTap;
+  const _SosAction(this.label, this.color, this.foreground, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: foreground == AppColors.navy ? const BorderSide(color: AppColors.navy, width: 2) : BorderSide.none,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: SizedBox(
+          height: 76,
+          child: Center(child: Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: foreground))),
+        ),
       ),
     );
   }

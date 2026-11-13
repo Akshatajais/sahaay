@@ -192,7 +192,7 @@ class Copy {
   static const sosTitle = Localized('Sahaay Emergency', 'सहाय आपातकाल');
   static const areYouOk = Localized('Are you okay?', 'क्या आप ठीक हैं?');
   static const chooseNeed = Localized('We are here to help you. Choose what you need.', 'हम आपकी मदद के लिए यहाँ हैं। चुनें कि आपको क्या चाहिए।');
-  static const emergencySos = Localized('EMERGENCY SOS', 'आपातकालीन एसओएस');
+  static const emergencySos = Localized('Emergency SOS', 'आपातकालीन एसओएस');
   static const needImmediate = Localized('I need immediate help', 'मुझे तुरंत मदद चाहिए');
   static const alertFamily = Localized('Alert my family and start emergency assistance', 'मेरे परिवार को सूचित करें और आपातकालीन सहायता शुरू करें');
   static const callMyFamily = Localized('Call my family', 'मेरे परिवार को कॉल करें');
@@ -214,9 +214,11 @@ class Copy {
   static const activated = Localized('SOS Activated', 'एसओएस चालू है');
   static const activatedBody = Localized('We are contacting your emergency contacts.', 'हम आपके आपातकालीन संपर्कों से संपर्क कर रहे हैं।');
   static const alertSent = Localized('Alert sent to emergency contacts', 'आपातकालीन संपर्कों को सूचना भेज दी गई');
+  static const alertFamilySent = Localized('Alert sent to family', 'परिवार को सूचना भेज दी गई');
   static const locationStarted = Localized('Location sharing started', 'स्थान साझा करना शुरू हो गया');
   static const waitingFamily = Localized('Waiting for family response', 'परिवार के जवाब की प्रतीक्षा');
   static const call112 = Localized('CALL 112 – Emergency Services', '112 पर कॉल करें – आपातकालीन सेवाएँ');
+  static const callEmergency = Localized('Call emergency', 'आपातकालीन कॉल');
   static const cancelSos = Localized('Cancel SOS', 'एसओएस रद्द करें');
   static const daughterResponding = Localized('Your daughter is responding!', 'आपकी बेटी जवाब दे रही है!');
   static const priyaOnWay = Localized('Priya has received your alert and is on the way.', 'प्रिया को आपकी सूचना मिल गई है और वह रास्ते में है।');
