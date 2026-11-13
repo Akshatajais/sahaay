@@ -2,8 +2,6 @@ import 'models.dart';
 
 enum MedStatus { taken, upcoming, needsAttention }
 
-enum VoiceIntent { nextMedicine, sendMoney, help, home, call, habit, unknown }
-
 String todayKey([DateTime? date]) {
   final value = date ?? DateTime.now();
   final month = value.month.toString().padLeft(2, '0');
@@ -189,27 +187,6 @@ Localized familyMedicineNote(String medicineName, String people) => Localized(
       '$medicineName is still not marked taken. A note is saved on this device for $people. Nothing was sent to their phones.',
       '$medicineName अभी तक ले ली गई दर्ज नहीं है। $people के लिए नोट इस डिवाइस पर सहेजा गया है। उनके फ़ोन पर कुछ नहीं भेजा गया।',
     );
-
-({VoiceIntent type, String? habit, String? relation}) interpret(String raw) {
-  final text = raw.toLowerCase();
-  bool has(List<String> words) => words.any(text.contains);
-  if (has(['send money', 'पैसे भेज', 'payment', 'भुगतान'])) return (type: VoiceIntent.sendMoney, habit: null, relation: null);
-  if (has(['sos', 'emergency', 'आपातकाल', 'बचाव'])) return (type: VoiceIntent.help, habit: null, relation: null);
-  if (has(['medicine', 'दवा', 'dawai', 'tablet', 'गोली'])) return (type: VoiceIntent.nextMedicine, habit: null, relation: null);
-  if (has(['water', 'पानी'])) return (type: VoiceIntent.habit, habit: 'water', relation: null);
-  if (has(['walk', 'टहल'])) return (type: VoiceIntent.habit, habit: 'walk', relation: null);
-  if (has(['stretch', 'व्यायाम', 'exercise'])) return (type: VoiceIntent.habit, habit: 'stretch', relation: null);
-  if (has(['rest', 'आराम', 'break'])) return (type: VoiceIntent.habit, habit: 'rest', relation: null);
-  if (has(['home', 'होम'])) return (type: VoiceIntent.home, habit: null, relation: null);
-  if (has(['call', 'कॉल', 'phone', 'फोन'])) {
-    if (has(['daughter', 'beti', 'बेटी'])) return (type: VoiceIntent.call, habit: null, relation: 'daughter');
-    if (has(['son', 'beta', 'बेटा'])) return (type: VoiceIntent.call, habit: null, relation: 'son');
-    if (has(['sister', 'बहन'])) return (type: VoiceIntent.call, habit: null, relation: 'sister');
-    return (type: VoiceIntent.call, habit: null, relation: 'any');
-  }
-  if (has(['help', 'मदद', 'सहायता'])) return (type: VoiceIntent.help, habit: null, relation: null);
-  return (type: VoiceIntent.unknown, habit: null, relation: null);
-}
 
 String portraitFor(String relation, String name) {
   final who = name.toLowerCase();

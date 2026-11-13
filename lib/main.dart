@@ -12,7 +12,6 @@ import 'screens/medicines_screen.dart';
 import 'screens/moment_screen.dart';
 import 'screens/money_screen.dart';
 import 'screens/notifications_screen.dart';
-import 'screens/voice_screen.dart';
 import 'store.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -103,43 +102,38 @@ class Shell extends StatelessWidget {
                         _Tab(
                           label: store.t(Copy.home),
                           selected: route == 'home',
-                          icon: Icons.home,
-                          bubble: route == 'home' ? AppColors.care : AppColors.cream,
-                          color: route == 'home' ? AppColors.navy : AppColors.muted,
+                          icon: Icons.home_outlined,
+                          selectedIcon: Icons.home,
                           onTap: () => nav.go('home'),
                         ),
                         _Tab(
                           label: store.t(Copy.myDay),
                           selected: route == 'day' || route == 'moment',
                           icon: Icons.wb_sunny_outlined,
-                          bubble: route == 'day' || route == 'moment' ? const Color(0xFFF7DFAE) : const Color(0xFFFFF6E4),
-                          color: AppColors.navy,
+                          selectedIcon: Icons.wb_sunny,
                           onTap: () => nav.go('day'),
                         ),
                         _Tab(
                           label: store.t(Copy.medicines),
                           selected: route == 'medicines' || route == 'medicine' || route == 'medicine-done',
                           icon: Icons.medication_outlined,
-                          bubble: route == 'medicines' || route == 'medicine' || route == 'medicine-done' ? AppColors.care : const Color(0xFFF3F8F4),
-                          color: AppColors.navy,
+                          selectedIcon: Icons.medication,
                           onTap: () => nav.go('medicines'),
                         ),
                         _Tab(
                           label: store.t(Copy.contacts),
                           selected: route == 'family' || route == 'chat',
                           icon: Icons.people_alt_outlined,
-                          bubble: route == 'family' || route == 'chat' ? const Color(0xFFF8E6D8) : const Color(0xFFFFF4EC),
-                          color: AppColors.navy,
+                          selectedIcon: Icons.people_alt,
                           onTap: () => nav.go('family'),
                         ),
                         _Tab(
                           label: 'SOS',
                           selected: route == 'help',
-                          icon: Icons.phone,
-                          bubble: AppColors.sos,
-                          color: Colors.white,
+                          icon: Icons.phone_outlined,
+                          selectedIcon: Icons.phone,
+                          color: AppColors.sos,
                           labelColor: AppColors.sos,
-                          ring: route == 'help',
                           onTap: () => nav.go('help'),
                         ),
                       ],
@@ -180,7 +174,6 @@ class Shell extends StatelessWidget {
       'send' => const SendMoneyScreen(),
       'receive' => const ReceiveScreen(),
       'payment' => PaymentResultScreen(id: '$args'),
-      'voice' => const VoiceScreen(),
       'help' => const HelpScreen(),
       'day' => const DayScreen(),
       'moment' => MomentScreen(id: '$args'),
@@ -196,15 +189,24 @@ class _Tab extends StatelessWidget {
   final String label;
   final bool selected;
   final IconData icon;
-  final Color bubble;
-  final Color color;
+  final IconData selectedIcon;
+  final Color? color;
   final Color? labelColor;
-  final bool ring;
   final VoidCallback onTap;
-  const _Tab({required this.label, required this.selected, required this.icon, required this.bubble, required this.color, required this.onTap, this.labelColor, this.ring = false});
+  const _Tab({
+    required this.label,
+    required this.selected,
+    required this.icon,
+    required this.selectedIcon,
+    required this.onTap,
+    this.color,
+    this.labelColor,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = color ?? (selected ? AppColors.navy : AppColors.muted);
+    final highlight = color == AppColors.sos ? const Color(0xFFFBEAEA) : AppColors.care;
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -216,14 +218,12 @@ class _Tab extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: bubble,
-                    borderRadius: BorderRadius.circular(16),
-                    border: ring ? Border.all(color: AppColors.navy, width: 2) : null,
-                  ),
-                  child: Icon(icon, color: color, size: 26),
+                  width: 48,
+                  height: 48,
+                  decoration: selected
+                      ? BoxDecoration(color: highlight, borderRadius: BorderRadius.circular(16))
+                      : null,
+                  child: Icon(selected ? selectedIcon : icon, color: iconColor, size: 28),
                 ),
               ),
               const SizedBox(height: 4),

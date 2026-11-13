@@ -8,10 +8,6 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>SAHAAY</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>SAHAAY listens only when you tap the microphone, so you can ask about medicines, calls, and payments.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>SAHAAY turns what you say into a request on this device. Nothing is sent as a real call or payment.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

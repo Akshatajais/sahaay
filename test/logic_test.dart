@@ -15,9 +15,7 @@ void main() {
     expect(statusOf(medicine, now), MedStatus.taken);
   });
 
-  test('amounts format in rupees and voice finds a medicine request', () {
+  test('amounts format in rupees', () {
     expect(formatRupees(10000), '₹10,000');
-    expect(interpret('When is my next medicine?').type, VoiceIntent.nextMedicine);
-    expect(interpret('Help me send money').type, VoiceIntent.sendMoney);
   });
 }
