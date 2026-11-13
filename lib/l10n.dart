@@ -117,7 +117,7 @@ class Copy {
     'If you miss your medicines for 2 days, we automatically notify your trusted contact.',
     'अगर आप 2 दिन तक दवा नहीं लेते, तो हम आपके भरोसेमंद संपर्क को अपने आप सूचित करते हैं।',
   );
-  static const chatFrom = Localized('Automatic notification from SAHAAY', 'SAHAAY की स्वचालित सूचना');
+  static const chatFrom = Localized('Automatic notification from Sahaay', 'Sahaay की स्वचालित सूचना');
   static const sentAuto = Localized('Sent automatically', 'अपने आप भेजा गया');
   static const onDevice = Localized('Saved on this device', 'इस डिवाइस पर सहेजा गया');
   static const wellDone = Localized('Well done!', 'बहुत खूब!');

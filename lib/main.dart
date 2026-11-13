@@ -41,7 +41,7 @@ class SahaayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
     return MaterialApp(
-      title: 'SAHAAY',
+      title: 'Sahaay',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       builder: (context, child) {

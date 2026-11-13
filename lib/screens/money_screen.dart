@@ -10,7 +10,7 @@ import '../theme.dart';
 import '../widgets.dart';
 
 const demoLimit = 10000;
-const demoQr = 'upi://pay?pa=sahaay.demo@okaxis&pn=SAHAAY%20Demonstration&cu=INR';
+const demoQr = 'upi://pay?pa=sahaay.demo@okaxis&pn=Sahaay%20Demonstration&cu=INR';
 
 class MoneyScreen extends StatefulWidget {
   const MoneyScreen({super.key});

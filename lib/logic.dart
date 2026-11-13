@@ -155,8 +155,8 @@ Localized familyCallMessage(String name) {
 Localized familyCheckMessage(String name) {
   final first = name.trim().split(RegExp(r'\s+')).first;
   return Localized(
-    'Hi $first, SAHAAY noticed that Mom has missed her medicines for 2 days. Please check on her.',
-    'नमस्ते $first, SAHAAY ने देखा है कि माँ ने 2 दिन से दवा नहीं ली। कृपया उन पर ध्यान दें।',
+    'Hi $first, Sahaay noticed that Mom has missed her medicines for 2 days. Please check on her.',
+    'नमस्ते $first, Sahaay ने देखा है कि माँ ने 2 दिन से दवा नहीं ली। कृपया उन पर ध्यान दें।',
   );
 }
 
