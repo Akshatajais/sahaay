@@ -178,7 +178,7 @@ class _MedicineCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(color: attention ? AppColors.amber : Colors.white, borderRadius: BorderRadius.circular(999)),
                 child: Text(
-                  store.t(attention ? Copy.needsAttention : status == MedStatus.taken ? Copy.taken : Copy.upcoming),
+                  store.t(attention ? Copy.takeNow : status == MedStatus.taken ? Copy.taken : Copy.upcoming),
                   style: TextStyle(fontWeight: FontWeight.w800, color: attention ? AppColors.amberInk : AppColors.navy),
                 ),
               ),
@@ -209,10 +209,6 @@ class _MedicineCard extends StatelessWidget {
               Image.asset('assets/icons/medicines.png', width: 72, height: 72),
             ],
           ),
-          if (attention) ...[
-            const SizedBox(height: 8),
-            const Bilingual(Copy.unconfirmed),
-          ],
           const SizedBox(height: 10),
           PrimaryButton(
             label: store.t(Copy.markTaken),

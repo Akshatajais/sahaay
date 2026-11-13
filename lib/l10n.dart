@@ -158,6 +158,7 @@ class Copy {
   static const morning = Localized('Morning', 'सुबह');
   static const afternoon = Localized('Afternoon', 'दोपहर');
   static const evening = Localized('Evening', 'शाम');
+  static const dinner = Localized('Dinner', 'रात का खाना');
   static const morningMed = Localized('Morning medicine', 'सुबह की दवा');
   static const afternoonMed = Localized('Afternoon medicine', 'दोपहर की दवा');
   static const nightMed = Localized('Night medicine', 'रात की दवा');
@@ -278,7 +279,7 @@ class Copy {
     return switch (slot) {
       'morning' => morning,
       'afternoon' => afternoon,
-      _ => evening,
+      _ => dinner,
     };
   }
 

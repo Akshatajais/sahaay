@@ -320,7 +320,7 @@ class MedicineDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(store.t(status == MedStatus.taken ? Copy.taken : status == MedStatus.upcoming ? Copy.upcoming : Copy.needsAttention), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.navy)),
+              Text(store.t(status == MedStatus.taken ? Copy.taken : status == MedStatus.upcoming ? Copy.upcoming : Copy.takeNow), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.navy)),
               Center(child: Image.asset(pillFor(medicine.id), height: 112)),
               Text(medicine.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.navy)),
               Text(formatHm(medicine.time, store.hindi), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.navy)),

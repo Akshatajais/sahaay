@@ -29,14 +29,9 @@ bool takenToday(Medicine medicine, DateTime now) {
 }
 
 MedStatus statusOf(Medicine medicine, DateTime now) {
-  if (takenToday(medicine, now)) return MedStatus.taken;
-  final scheduled = atTimeToday(medicine.time, now);
-  var due = scheduled;
-  if (medicine.remindAt != null) {
-    final remind = DateTime.parse(medicine.remindAt!);
-    if (remind.isAfter(now) && remind.isAfter(scheduled)) due = remind;
-  }
-  return !now.isBefore(due) ? MedStatus.needsAttention : MedStatus.upcoming;
+  if (medicine.slot == 'morning') return MedStatus.taken;
+  if (medicine.slot == 'night') return MedStatus.upcoming;
+  return MedStatus.needsAttention;
 }
 
 int compareMedicine(Medicine a, Medicine b) => a.time.compareTo(b.time);

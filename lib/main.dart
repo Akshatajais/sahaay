@@ -304,8 +304,6 @@ class _Sheet extends StatelessWidget {
               Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.navy)),
               const SizedBox(height: 8),
               Text(body, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              const Bilingual(Copy.unconfirmed),
               const SizedBox(height: 12),
               PrimaryButton(label: confirm, onPressed: onConfirm),
               const SizedBox(height: 8),
