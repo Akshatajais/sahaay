@@ -100,6 +100,13 @@ class Shell extends StatelessWidget {
                     child: Row(
                       children: [
                         _Tab(
+                          label: store.t(Copy.money),
+                          selected: route == 'money' || route == 'send' || route == 'receive' || route == 'payment',
+                          icon: Icons.account_balance_wallet_outlined,
+                          selectedIcon: Icons.account_balance_wallet,
+                          onTap: () => nav.go('money'),
+                        ),
+                        _Tab(
                           label: store.t(Copy.home),
                           selected: route == 'home',
                           icon: Icons.home_outlined,
@@ -107,25 +114,11 @@ class Shell extends StatelessWidget {
                           onTap: () => nav.go('home'),
                         ),
                         _Tab(
-                          label: store.t(Copy.myDay),
-                          selected: route == 'day' || route == 'moment',
-                          icon: Icons.wb_sunny_outlined,
-                          selectedIcon: Icons.wb_sunny,
-                          onTap: () => nav.go('day'),
-                        ),
-                        _Tab(
                           label: store.t(Copy.medicines),
                           selected: route == 'medicines' || route == 'medicine' || route == 'medicine-done',
                           icon: Icons.medication_outlined,
                           selectedIcon: Icons.medication,
                           onTap: () => nav.go('medicines'),
-                        ),
-                        _Tab(
-                          label: store.t(Copy.contacts),
-                          selected: route == 'family' || route == 'chat',
-                          icon: Icons.people_alt_outlined,
-                          selectedIcon: Icons.people_alt,
-                          onTap: () => nav.go('family'),
                         ),
                         _Tab(
                           label: 'SOS',
