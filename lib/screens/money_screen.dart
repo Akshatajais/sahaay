@@ -254,8 +254,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         if (stage == 'review') ...[
           Text(formatRupees(amount), textAlign: TextAlign.center, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: AppColors.navy)),
           Text(payee?.name ?? customName ?? '', textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          Text(store.t(Copy.notRealAuth), textAlign: TextAlign.center),
           const SizedBox(height: 16),
           PrimaryButton(
             label: store.t(Copy.confirmPayment),
@@ -424,8 +422,10 @@ class PaymentResultScreen extends StatelessWidget {
                   ],
                 ),
         ),
-        const SizedBox(height: 12),
-        Text(store.t(body), style: const TextStyle(fontSize: 18)),
+        if (item.status != 'success') ...[
+          const SizedBox(height: 12),
+          Text(store.t(body), style: const TextStyle(fontSize: 18)),
+        ],
         const SizedBox(height: 16),
         if (item.status == 'pending') ...[
           PrimaryButton(label: store.t(Copy.completePayment), onPressed: () => store.updateTransaction(item.id, status: 'success', reason: 'demo')),
