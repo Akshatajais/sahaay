@@ -12,7 +12,7 @@ void main() {
     for (final now in [early, late]) {
       expect(statusOf(morning, now), MedStatus.taken);
       expect(statusOf(afternoon, now), MedStatus.needsAttention);
-      expect(statusOf(Medicine(id: 'med-afternoon', name: 'Metformin', slot: 'afternoon', time: '14:00', takenAt: now.toIso8601String()), now), MedStatus.needsAttention);
+      expect(statusOf(Medicine(id: 'med-afternoon', name: 'Metformin', slot: 'afternoon', time: '14:00', takenAt: now.toIso8601String()), now), MedStatus.taken);
       expect(statusOf(dinner, now), MedStatus.upcoming);
     }
   });

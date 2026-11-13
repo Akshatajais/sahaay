@@ -31,6 +31,7 @@ bool takenToday(Medicine medicine, DateTime now) {
 MedStatus statusOf(Medicine medicine, DateTime now) {
   if (medicine.slot == 'morning') return MedStatus.taken;
   if (medicine.slot == 'night') return MedStatus.upcoming;
+  if (takenToday(medicine, now)) return MedStatus.taken;
   return MedStatus.needsAttention;
 }
 
